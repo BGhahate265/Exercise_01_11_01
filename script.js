@@ -11,9 +11,9 @@
 
 // global variables
 var selectedCity = "Tucson, AZ";
-var weatherReport = null;
+var weatherReport = null; // holds our response data
 // var to hold our XHR object
-var httpRequest = false;
+var httpRequest = false; // have an XMR object?
 
 // function to get a request object
 function getRequestObject() {
@@ -25,8 +25,25 @@ function getRequestObject() {
         document.querySelector("p.error").style.display = "block";
         return false;
     }
-    return httpRequest
+    return httpRequest;
 }
+
+//function is an event handler for onreadystatechange
+// get the weather data if successful
+function fillWeather() {
+    //check the readyState for 4- done 
+    if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+        weatherReport = JSON.parse(httpRequest.responseText);
+        var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        var dateValue = new Date(weatherReport.daily.data[0].time);
+        var dayOfWeek = dateValue.getDay();
+        var rows = document.querySelectorAll("section.week table tbody tr");
+        document.querySelector("section.week table caption").innerHTML = selectedCity;
+        document.querySelector("section.week table caption").style.display = "block";
+        document.querySelector("section.week table").style.display = "inline-block";
+    }
+}
+
 // get the weather on click to click events on city locations and for default city load
 function getWeather(evt) {
     var latitude;
@@ -55,8 +72,10 @@ function getWeather(evt) {
     //protect against open request
     httpRequest.abort();
     // target request
-    httpRequest.open("get", "solar.php?" + "lat=" + latitude + "&lng" + longitude, true);
+    httpRequest.open("get", "solar.php?" + "lat=" + latitude + "&lng=" + longitude, true);
     httpRequest.send(null);
+    // event listener for onreadystatechange
+    httpRequest.onreadystatechange = fillWeather;
 }
 
 // retrieve li elements holding city location chioces
